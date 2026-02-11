@@ -1,0 +1,122 @@
+{
+  "name": "Processo Seletivo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtDayOfMonth": 21,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, -128],
+      "id": "schedule-trigger",
+      "name": "Disparo Mensal"
+    },
+    {
+      "parameters": {
+        "documentId": "GOOGLE_SHEETS_ID_AQUI",
+        "sheetName": "Página1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [224, -128],
+      "id": "google-sheets",
+      "name": "Candidatos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json['Anos Experiência '] }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "leftValue": "={{ $json['Grau Escolaridade'] }}",
+              "rightValue": "Superior",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [448, -128],
+      "id": "if-aprovado",
+      "name": "Candidato Aprovado?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [672, -224],
+      "id": "split",
+      "name": "Para cada Candidato"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@empresa.com",
+        "toEmail": "candidato@email.com",
+        "subject": "Você foi aprovado!!!",
+        "emailFormat": "text",
+        "text": "=Olá, {{ $json.Nome }}, tudo bem? 😄\n\nTemos o prazer de informar que você foi aprovado(a) no nosso processo seletivo e gostaríamos de formalizar uma proposta de contratação para integrar nosso time!\n\n✅ Cargo\n\nAnalista Sênior de Excelência Operacional (modo lenda)\n\n✅ Modelo de trabalho\n\nPresencial/Remoto/Híbrido: você escolhe (a gente confia no seu potencial)\n\n✅ Jornada\n\n📅 3 vezes por semana\n🕐 Das 13h às 17h\nTotalizando 12 horas semanais.\n\n✅ Remuneração\n\n💰 R$ 20.000,00 por mês\n\n✅ Benefícios\n\n🍽️ Vale alimentação\n☕ Vale café ilimitado\n🧠 Auxílio terapia\n🏖️ Férias flexíveis\n\n📌 Início imediato\n\nAtenciosamente,\nEquipe de Recrutamento — RH dos Sonhos"
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [896, -288],
+      "id": "email-aprovado",
+      "name": "Enviar e-mail aprovado"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1120, -224],
+      "id": "wait",
+      "name": "Aguardar"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [{ "fieldToAggregate": "Nome" }]
+        }
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [672, 32],
+      "id": "aggregate",
+      "name": "Lista de Reprovados"
+    },
+    {
+      "parameters": {
+        "fromEmail": "rh@empresa.com",
+        "toEmail": "recrutador@empresa.com",
+        "subject": "Candidatos Reprovados",
+        "html": "=Olá,\n\nSegue a lista de candidatos reprovados:\n\n{{ $json.Nome[0] }}\n{{ $json.Nome[1] }}\n\nAtenciosamente,\nRH"
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [896, 32],
+      "id": "email-reprovados",
+      "name": "Enviar lista de reprovados"
+    }
+  ],
+  "connections": {},
+  "active": false
+}
